@@ -20,6 +20,7 @@ requires "Sys::Virt";
 requires "XML::LibXML";
 requires "Net::SSH::Perl";
 requires "Net::SFTP";
+requires "Net::XMPP";
 requires "Data::UUID";
 
 WriteAll;

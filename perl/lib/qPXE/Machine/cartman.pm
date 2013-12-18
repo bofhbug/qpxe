@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 extends qw ( qPXE::Machine );
-with qw ( qPXE::Role::SSH qPXE::Role::Dhcpd );
+with qw ( qPXE::Role::SSH qPXE::Role::XMPP qPXE::Role::Dhcpd );
 
 __PACKAGE__->meta->make_immutable();
 

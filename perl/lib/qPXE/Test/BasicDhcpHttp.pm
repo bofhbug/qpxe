@@ -14,9 +14,13 @@ method execute () {
       "filename \"http://cartman/boot/demo.ipxe\";",
       "option ipxe.testid ".$self->uuid_colons.";" ] );
 
+
+  $self->cartman->xmpp->subscribe ( $self );
+
   # Start DUT
   $self->butters->domain->create();
-  
+
+  $self->cartman->xmpp->unsubscribe ( $self );
 }
 
 __PACKAGE__->meta->make_immutable();
