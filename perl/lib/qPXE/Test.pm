@@ -21,6 +21,24 @@ use warnings;
 
 =over
 
+=item C<lab>
+
+The C<qPXE::Lab> object representing the virtual test laboratory
+in which the test is running.
+
+=cut
+
+has "lab" => (
+  is => "ro",
+  isa => "qPXE::Lab",
+  required => 1,
+  weak_ref => 1,
+);
+
+=item C<uuid_bin>
+
+The test UUID, as a raw binary value.
+
 =cut
 
 has _uuidobj => (
@@ -34,12 +52,6 @@ has _uuidobj => (
 method _build_uuidobj {
   return Data::UUID->new();
 }
-
-=item C<uuid_bin>
-
-The test UUID, as a raw binary value.
-
-=cut
 
 has uuid_bin => (
   is => "ro",
