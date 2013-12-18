@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+
+use qPXE::Lab;
+use qPXE::Test;
+use strict;
+use warnings;
+
+my $lab = qPXE::Lab->new ( uri => "qemu:///system" );
+my $cartman = $lab->machine ( "cartman" );
+my $butters = $lab->machine ( "butters" );
+my $test = qPXE::Test->new();
+
+$butters->domain->destroy() if $butters->domain->is_active();
+
+my $mac = $butters->mac ( "primary" );
+my $testid = $test->uuid_colons;
+$cartman->dhcpd->reserve ( $butters->name, <<"EOF" );
+hardware ethernet $mac;
+filename "http://cartman/boot/demo.ipxe";
+option ipxe.testid $testid;
+EOF
+
+$butters->domain->create();
