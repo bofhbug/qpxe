@@ -8,9 +8,7 @@ qPXE::Role::Dhcpd - A machine implementing a DHCP server using ISC DHCPD
 
 =cut
 
-use Moose::Role;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
+use qPXE::Moose::Role;
 use qPXE::Dhcpd;
 use strict;
 use warnings;

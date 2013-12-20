@@ -2,10 +2,11 @@ package qPXE::Test::BasicDhcpHttp;
 
 use qPXE::Test::Sugar;
 extends qw ( qPXE::Test );
-has_machine qw ( cartman );
+has_machine qw ( cartman butters );
+has_xmpp qw ( cartman );
 has_dut qw ( butters );
 
-method execute () {
+method prepare () {
 
   # Create DHCP reservation
   $self->cartman->dhcpd->reserve (
@@ -14,13 +15,23 @@ method execute () {
       "filename \"http://cartman/boot/demo.ipxe\";",
       "option ipxe.testid ".$self->uuid_colons.";" ] );
 
+}
 
-  $self->cartman->xmpp->subscribe ( $self );
+method execute () {
 
   # Start DUT
   $self->butters->domain->create();
 
-  $self->cartman->xmpp->unsubscribe ( $self );
+  # Wait for DUT to boot
+  print "Waiting for ".$self->uuid."\n";
+  $self->wait ( "booted", 60 );
+
+}
+
+method cleanup () {
+
+  # Shut down DUT
+  $self->butters->domain->destroy();
 }
 
 __PACKAGE__->meta->make_immutable();

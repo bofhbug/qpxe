@@ -10,6 +10,7 @@ install_script "qpxe-dhcpd", "qpxe-demo";
 
 requires "Carp";
 requires "Carp::Clan";
+requires "TryCatch";
 requires "Moose";
 requires "Moose::Util::TypeConstraints";
 requires "MooseX::StrictConstructor";
@@ -22,5 +23,6 @@ requires "Net::SSH::Perl";
 requires "Net::SFTP";
 requires "Net::XMPP";
 requires "Data::UUID";
+requires "Catalyst";
 
 WriteAll;

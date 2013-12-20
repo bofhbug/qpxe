@@ -19,12 +19,8 @@ qPXE::Dhcpd - An instance of ISC DHCPD
 
 =cut
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
+use qPXE::Moose;
 use File::Temp;
-use Carp;
 use strict;
 use warnings;
 

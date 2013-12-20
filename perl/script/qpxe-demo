@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use qPXE::Lab;
 use qPXE::Test::BasicDhcpHttp;
@@ -8,4 +8,6 @@ use warnings;
 my $lab = qPXE::Lab->new ( uri => "qemu:///system" );
 my $test = qPXE::Test::BasicDhcpHttp->new ( lab => $lab );
 
+$test->prepare();
 $test->execute();
+$test->cleanup();

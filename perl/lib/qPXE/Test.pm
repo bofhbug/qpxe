@@ -9,10 +9,7 @@ qPXE::Test - A test case
 
 =cut
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
+use qPXE::Moose;
 use Data::UUID;
 use strict;
 use warnings;
@@ -41,7 +38,7 @@ The test UUID, as a raw binary value.
 
 =cut
 
-has _uuidobj => (
+has "_uuidobj" => (
   is => "ro",
   isa => "Data::UUID",
   lazy => 1,
@@ -53,7 +50,7 @@ method _build_uuidobj {
   return Data::UUID->new();
 }
 
-has uuid_bin => (
+has "uuid_bin" => (
   is => "ro",
   isa => "Str",
   lazy => 1,
@@ -72,7 +69,7 @@ The test UUID, in the canonical text format
 
 =cut
 
-has uuid => (
+has "uuid" => (
   is => "ro",
   isa => "Str",
   lazy => 1,
@@ -92,7 +89,7 @@ inclusion within C<dhcpd.conf>
 
 =cut
 
-has uuid_colons => (
+has "uuid_colons" => (
   is => "ro",
   isa => "Str",
   lazy => 1,
@@ -108,6 +105,21 @@ method _build_uuid_colons () {
 =back
 
 =cut
+
+method BUILD ( HashRef $args ) {
+
+  # If we have an XMPP server, subscribe to our own test results.  Do
+  # this in BUILD so that the subscription is created prior to any
+  # attempt to wait on a test result, without requiring an explicit
+  # subscription action by the test itself.
+  $self->subscribe() if $self->meta->has_attribute ( "xmpp" );
+}
+
+method DEMOLISH ( Bool $in_global_destruction ) {
+
+  # If we have an XMPP server, unsubscribe from our own test results
+  $self->unsubscribe() if $self->meta->has_attribute ( "xmpp" );
+}
 
 __PACKAGE__->meta->make_immutable();
 

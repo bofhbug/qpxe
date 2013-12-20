@@ -1,9 +1,6 @@
 package qPXE::Machine::cartman;
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
+use qPXE::Moose;
 use strict;
 use warnings;
 

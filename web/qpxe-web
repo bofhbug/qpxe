@@ -1,0 +1,68 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+qpxe-web
+
+=head1 SYNOPSIS
+
+qpxe-web [options]
+
+Options:
+
+    -v,--verbose		Increase verbosity
+    -q,--quiet			Decrease verbosity
+    -h,--help			Display brief help message
+    -p,--port=PORT		Port on which to listen
+    --xmpp=HOSTNAME		Specify XMPP server
+
+=head1 DESCRIPTION
+
+C<qpxe-web> runs a local debugging instance of the qPXE web
+application.
+
+Do not use this program in a production environment.
+
+=cut
+
+use FindBin;
+use blib $FindBin::Bin."/../perl/blib";
+use Getopt::Long;
+use Pod::Usage;
+use strict;
+use warnings;
+
+BEGIN {
+  $ENV{CATALYST_ENGINE} = "HTTP";
+  $ENV{CATALYST_HOME} = $FindBin::Bin;
+  require Catalyst::Engine::HTTP;
+}
+
+# Parse command-line options
+my $verbosity = 0;
+my $port = 3000;
+my $xmpp;
+GetOptions (
+  'verbose|v+' => sub { $verbosity++ },
+  'quiet|q+' => sub { $verbosity-- },
+  'help|h' => sub { pod2usage ( 1 ); },
+  'port|p=s' => sub { shift; $port = shift; },
+  'xmpp=s' => sub { shift; $xmpp = shift; },
+) or die "Could not parse command-line options\n";
+
+# Enable debugging if applicable
+if ( $verbosity > 0 ) {
+  $ENV{CATALYST_DEBUG} = 1;
+  $ENV{DBIC_TRACE} = 1;
+}
+
+# Specify XMPP server if applicable
+if ( $xmpp ) {
+  $ENV{QPXE_XMPP} = $xmpp;
+}
+
+# Delay loading qPXE::Web until environment is fully set up
+require qPXE::Web;
+
+# Run application
+qPXE::Web->run ( $port, undef, { argv => \@ARGV, } );

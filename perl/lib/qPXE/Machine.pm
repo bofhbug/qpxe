@@ -16,12 +16,9 @@ qPXE::Machine - A machine within the virtual test laboratory
 
 =cut
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
-use XML::LibXML;
+use qPXE::Moose;
 use qPXE::Network;
+use XML::LibXML;
 use strict;
 use warnings;
 

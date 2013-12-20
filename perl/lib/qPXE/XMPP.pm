@@ -15,16 +15,18 @@ qPXE::XMPP - An instance of an XMPP server
 
 =cut
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
+use qPXE::Moose;
+use qPXE::Error::XMPP;
 use Net::XMPP;
-use Net::XMPP::PubSub qw ( XMPP_PUBSUB_NS XMPP_PUBSUB_OWNER_NS );
+use Net::XMPP::PubSub qw ( :ns );
+use XML::LibXML;
 use Data::UUID;
-use Carp;
+use File::Basename;
 use strict;
 use warnings;
+
+# Enable debug traces
+use constant DEBUG_TX_RX => 0;
 
 =head1 ATTRIBUTES
 
@@ -32,7 +34,8 @@ use warnings;
 
 =item C<machine>
 
-The <qPXE::Machine> object representing the machine running DHCPD.
+The <qPXE::Machine> object representing the machine running the XMPP
+server.
 
 =cut
 
@@ -60,10 +63,17 @@ has "jid" => (
 
 method _build_jid () {
   my $jid = Net::XMPP::JID->new();
-  $jid->SetJID ( userid => "anonymous", server => $self->machine->hostname,
+  $jid->SetJID ( userid => basename ( $0 ), server => $self->machine->hostname,
 		 resource => lc Data::UUID->new()->create_str() );
   return $jid;
 }
+
+=item C<pubsub_jid>
+
+The C<Net::XMPP::JID> object representing the Jabber ID of the pubsub
+node.
+
+=cut
 
 has "pubsub_jid" => (
   is => "ro",
@@ -98,19 +108,20 @@ method _build_client () {
 
   # Create XMPP client
   my $client = Net::XMPP::Client->new();
-
-  $client->SetCallBacks ( send => sub { print "TX ".join ( ",", @_ )."\n" },
-			  receive => sub { print "RX ".join ( ",", @_ )."\n" });
+  if ( DEBUG_TX_RX ) {
+    $client->SetCallBacks ( send => sub { shift; print "TX ".shift."\n" },
+			    receive => sub { shift; print "RX ".shift."\n" } );
+  }
 
   # Connect to server
   $client->Connect ( hostname => $self->machine->hostname )
-      or croak "Could not connect to ".$self->machine->hostname.": $!";
+      or throw qPXE::Error::XMPP::CannotConnect();
 
   # Authenticate
   my @result = $client->AuthSend ( username => $self->jid->GetUserID(),
 				   resource => $self->jid->GetResource(),
 				   password => "" );
-  croak "XMPP authorization failed: ".$result[0]." - ".$result[1]
+  throw qPXE::Error::XMPP::Unauthorized ( detail => $result[1] )
       unless $result[0] eq "ok";
 
   return $client;
@@ -122,71 +133,121 @@ method _build_client () {
 
 =over
 
-=item C<< subscribe ( $test ) >>
+=item C<< subscribe ( $node ) >>
 
-Subscribe to the results for the specified test, which must be a
-C<qPXE::Test> object.
+Create and subscribe to the specified C<$node>.
 
 =cut
 
-method subscribe ( qPXE::Test $test ) {
+method subscribe ( Str $node ) {
 
   # Create test UUID node
-  my $iq = Net::XMPP::IQ->new();
-  my $pubsub = $iq->NewChild ( XMPP_PUBSUB_NS );
-  $iq->SetType ( "set" );
-  $iq->SetTo ( $self->pubsub_jid );
-  $pubsub->SetCreateNode ( $test->uuid );
-  $pubsub->SetConfigure();
-  $iq = $self->client->SendAndReceiveWithID ( $iq )
-      or croak "No reply to XMPP node creation";
-  croak "Could not create XMPP node: ".$iq->GetErrorCode()
-      if $iq->GetType() eq "error";  
+  my $request = Net::XMPP::IQ->new();
+  my $pubsub = $request->NewChild ( XMPP_PUBSUB_NS );
+  $request->SetType ( "set" );
+  $request->SetTo ( $self->pubsub_jid );
+  $pubsub->SetCreateNode ( $node );
+  my $configure = $pubsub->AddConfigure();
+  my $x = $configure->AddX();
+  $x->SetType ( "submit" );
+  my $field = $x->AddField();
+  $field->SetVar ( "pubsub#publish_model" );
+  $field->SetValue ( "open" );
+  my $response = $self->client->SendAndReceiveWithID ( $request )
+      or throw qPXE::Error::XMPP::IQMissing ( request => $request );
+  throw qPXE::Error::XMPP::IQ ( response => $response )
+      if $response->GetType() eq "error";  
 
   # Subscribe to test UUID node
-  $iq = Net::XMPP::IQ->new();
-  $pubsub = $iq->NewChild ( XMPP_PUBSUB_NS );
-  $iq->SetType ( "set" );
-  $iq->SetTo ( $self->pubsub_jid );
-  $pubsub->SetSubscribeNode ( $test->uuid );
+  $request = Net::XMPP::IQ->new();
+  $pubsub = $request->NewChild ( XMPP_PUBSUB_NS );
+  $request->SetType ( "set" );
+  $request->SetTo ( $self->pubsub_jid );
+  $pubsub->SetSubscribeNode ( $node );
   $pubsub->SetSubscribeJID ( $self->jid );
-  $iq = $self->client->SendAndReceiveWithID ( $iq )
-      or croak "No reply to XMPP node subscription";
-  croak "Could not subscribe to XMPP node: ".$iq->GetErrorCode()
-      if $iq->GetType() eq "error";
+  $response = $self->client->SendAndReceiveWithID ( $request )
+      or throw qPXE::Error::XMPP::IQMissing ( request => $request );
+  throw qPXE::Error::XMPP::IQ ( response => $response )
+      if $response->GetType() eq "error";  
 }
 
-=item C<< subscribe ( $test ) >>
+=item C<< wait ( $node, $id, $timeout ) >>
 
-Unsubscribe from the results for the specified test, which must be a
-C<qPXE::Test> object.
+Wait up to C<$timeout> seconds for an event notification from the
+specified C<$node> with the specified C<$id>, returning the payload
+(or throwing an exception if a suitable event notification is not
+received).
 
 =cut
 
-method unsubscribe ( qPXE::Test $test ) {
+method wait ( Str $node, Str $id, Int $timeout ) {
+
+  # Wait for a message to be received
+  my $message;
+  $self->client->SetCallBacks ( message => sub { shift; $message = shift } );
+  defined ( $self->client->Process ( $timeout ) )
+      or throw qPXE::Error::XMPP::Disconnected();
+  $self->client->SetCallBacks ( message => undef );
+  throw qPXE::Error::XMPP::Timeout() unless $message;
+
+  # Extract event
+  my $event = $message->GetChild ( XMPP_PUBSUB_EVENT_NS )
+      or throw qPXE::Error::XMPP::Unexpected();
+
+  # Extract items and verify node
+  my $items = $event->GetItems()
+      or throw qPXE::Error::XMPP::Unexpected();
+  throw qPXE::Error::XMPP::Unexpected() unless $items->DefinedNode();
+  throw qPXE::Error::XMPP::Unexpected ( node => $items->GetNode() )
+      unless $items->GetNode() eq $node;
+
+  # Extract item and verify ID
+  my $item = $items->GetItem()
+      or throw qPXE::Error::XMPP::Unexpected ( node => $node );
+  my $raw = $item->GetRaw()
+      or throw qPXE::Error::XMPP::Unexpected ( node => $node );
+  my $payload = XML::LibXML->load_xml ( string => $raw );
+  throw qPXE::Error::XMPP::Unexpected ( node => $node, payload => $payload )
+      unless $item->DefinedID();
+  throw qPXE::Error::XMPP::Unexpected ( node => $node,
+					id => $item->GetID(),
+					payload => $payload )
+      unless $item->GetID() eq $id;
+
+  return $payload;
+}
+
+
+=item C<< unsubscribe ( $node ) >>
+
+Unsubscribe from and delete the specified C<$node>.
+
+=cut
+
+method unsubscribe ( Str $node ) {
 
   # Unsubscribe from test UUID node
-  my $iq = Net::XMPP::IQ->new();
-  my $pubsub = $iq->NewChild ( XMPP_PUBSUB_NS );
-  $iq->SetType ( "set" );
-  $iq->SetTo ( $self->pubsub_jid );
-  $pubsub->SetUnsubscribeNode ( $test->uuid );
+  my $request = Net::XMPP::IQ->new();
+  my $pubsub = $request->NewChild ( XMPP_PUBSUB_NS );
+  $request->SetType ( "set" );
+  $request->SetTo ( $self->pubsub_jid );
+  $pubsub->SetUnsubscribeNode ( $node );
   $pubsub->SetUnsubscribeJID ( $self->jid );
-  $iq = $self->client->SendAndReceiveWithID ( $iq )
-      or croak "No reply to XMPP node unsubscription";
-  croak "Could not unsubscribe from XMPP node: ".$iq->GetErrorCode()
-      if $iq->GetType() eq "error";
+  my $response = $self->client->SendAndReceiveWithID ( $request )
+      or throw qPXE::Error::XMPP::IQMissing ( request => $request );
+  throw qPXE::Error::XMPP::IQ ( response => $response )
+      if $response->GetType() eq "error";  
 
   # Delete test UUID node
-  $iq = Net::XMPP::IQ->new();
-  $pubsub = $iq->NewChild ( XMPP_PUBSUB_OWNER_NS );
-  $iq->SetType ( "set" );
-  $iq->SetTo ( $self->pubsub_jid );
-  $pubsub->SetDeleteNode ( $test->uuid );
-  $iq = $self->client->SendAndReceiveWithID ( $iq )
-      or croak "No reply to XMPP node deletion";
-  croak "Could not delete XMPP node: ".$iq->GetErrorCode()
-      if $iq->GetType() eq "error";  
+  $request = Net::XMPP::IQ->new();
+  $pubsub = $request->NewChild ( XMPP_PUBSUB_OWNER_NS );
+  $request->SetType ( "set" );
+  $request->SetTo ( $self->pubsub_jid );
+  $pubsub->SetDeleteNode ( $node );
+  $response = $self->client->SendAndReceiveWithID ( $request )
+      or throw qPXE::Error::XMPP::IQMissing ( request => $request );
+  throw qPXE::Error::XMPP::IQ ( response => $response )
+      if $response->GetType() eq "error";  
 }
 
 =back

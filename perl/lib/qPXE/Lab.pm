@@ -13,14 +13,11 @@ qPXE::Lab - The virtual test laboratory
 
 =cut
 
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::Method::Signatures;
-use MooseX::MarkAsMethods autoclean => 1;
-use Class::Load qw ( :all );
-use Sys::Virt;
+use qPXE::Moose;
 use qPXE::Machine;
 use qPXE::Network;
+use Class::Load qw ( :all );
+use Sys::Virt;
 use strict;
 use warnings;
 
@@ -34,7 +31,7 @@ URI of the virtual machine monitor, as used by C<< Sys::Virt->new() >>.
 
 =cut
 
-has uri => (
+has "uri" => (
   is => "ro",
   isa => "Str",
   required => 1,
@@ -46,7 +43,7 @@ The C<Sys::Virt> object representing the virtual machine monitor.
 
 =cut
 
-has vmm => (
+has "vmm" => (
   is => "ro",
   isa => "Sys::Virt",
   lazy => 1,
@@ -65,7 +62,7 @@ C<hostname()> method.
 
 =cut
 
-has domainname => (
+has "domainname" => (
   is => "ro",
   isa => "Maybe[Str]",
   required => 1,
