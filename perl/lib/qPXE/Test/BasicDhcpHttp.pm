@@ -23,7 +23,6 @@ method execute () {
   $self->butters->domain->create();
 
   # Wait for DUT to boot
-  print "Waiting for ".$self->uuid."\n";
   $self->wait ( "booted", 60 );
 
 }

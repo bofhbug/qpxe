@@ -85,7 +85,7 @@ method _build_uuid () {
 
 The test UUID, as a colon-separated byte sequence suitable for
 inclusion within C<dhcpd.conf>
-(e.g. "7e:b8:64:43:84:67:e3:11:ba:6c:1a:2d:4e:ad:63:76")
+(e.g. "43:64:b8:7e:67:84:11:e3:ba:6c:1a:2d:4e:ad:63:67").
 
 =cut
 
@@ -98,28 +98,20 @@ has "uuid_colons" => (
 );
 
 method _build_uuid_colons () {
-  return join ( ":", ( map { sprintf "%02x", $_ }
-		       unpack ( "C16", $self->uuid_bin ) ) );
+
+  # We can't just use unpack("C16",$self->uuid_bin) since Data::UUID
+  # treats UUIDs as little-endian, while iPXE (in conformance with the
+  # RFCs) treats them as network-endian.
+
+  my $uuid_colons = lc $self->_uuidobj->to_hexstring ( $self->uuid_bin );
+  $uuid_colons =~ s/^0x//;
+  $uuid_colons =~ s/(..)(?=.)/$1:/g;
+  return $uuid_colons;
 }
 
 =back
 
 =cut
-
-method BUILD ( HashRef $args ) {
-
-  # If we have an XMPP server, subscribe to our own test results.  Do
-  # this in BUILD so that the subscription is created prior to any
-  # attempt to wait on a test result, without requiring an explicit
-  # subscription action by the test itself.
-  $self->subscribe() if $self->meta->has_attribute ( "xmpp" );
-}
-
-method DEMOLISH ( Bool $in_global_destruction ) {
-
-  # If we have an XMPP server, unsubscribe from our own test results
-  $self->unsubscribe() if $self->meta->has_attribute ( "xmpp" );
-}
 
 __PACKAGE__->meta->make_immutable();
 

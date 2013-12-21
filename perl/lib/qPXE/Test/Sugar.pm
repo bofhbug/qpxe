@@ -18,6 +18,7 @@ qPXE::Test::Sugar - Syntactic sugar for constructing test cases
 =cut
 
 use qPXE::Moose ();
+use qPXE::XMPP::Test;
 use MooseX::Method::Signatures;
 use MooseX::MarkAsMethods autoclean => 1;
 use Moose::Exporter;
@@ -111,30 +112,20 @@ sub has_xmpp {
   # Create "xmpp" builder
   my $builder = "_build_xmpp";
   $meta->add_method ( $builder => method () {
-    return $self->$xmpp->xmpp;
+    return qPXE::XMPP::Test->new ( xmpp => $self->$xmpp->xmpp,
+				   uuid => $self->uuid );
   } );
 
-  # Create "xmpp" attribute
+  # Create "xmpp" attribute.  This is marked as non-lazy to ensure
+  # that subscription to the test results happens as soon as the test
+  # is created, before any actions which might generate results.
   $meta->add_attribute ( "xmpp" => ( is => "ro",
-				     isa => "qPXE::XMPP",
-				     lazy => 1,
+				     isa => "qPXE::XMPP::Test",
+				     lazy => 0,
 				     builder => $builder,
+				     handles => [ qw ( subscribe wait
+						       unsubscribe ) ],
 				     init_arg => undef ) );
-
-  # Create "subscribe" method
-  $meta->add_method ( "subscribe" => method () {
-    $self->xmpp->subscribe ( $self->uuid );
-  } );
-
-  # Create "wait" method
-  $meta->add_method ( "wait" => method ( Str $id, Int $timeout ) {
-    return $self->xmpp->wait ( $self->uuid, $id, $timeout );
-  } );
-
-  # Create "unsubscribe" method
-  $meta->add_method ( "unsubscribe" => method () {
-    $self->xmpp->unsubscribe ( $self->uuid );
-  } );
 }
 
 =back

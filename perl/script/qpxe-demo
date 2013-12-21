@@ -11,3 +11,5 @@ my $test = qPXE::Test::BasicDhcpHttp->new ( lab => $lab );
 $test->prepare();
 $test->execute();
 $test->cleanup();
+
+print "Test completed successfully\n";

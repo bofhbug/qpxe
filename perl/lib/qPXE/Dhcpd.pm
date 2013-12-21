@@ -68,7 +68,7 @@ method reserve ( Str $host, Str | ArrayRef[Str] $config ) {
   } else {
     $reservation .= "\n\t".$config;
   }
-  $reservation .= "\n};\n";
+  $reservation .= "\n}\n";
 
   # Generate temporary file containing the reservation
   my $tempfile = File::Temp->new();
