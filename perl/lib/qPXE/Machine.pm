@@ -37,7 +37,6 @@ has "lab" => (
   is => "ro",
   isa => "qPXE::Lab",
   required => 1,
-  weak_ref => 1,
 );
 
 =item C<domain>
