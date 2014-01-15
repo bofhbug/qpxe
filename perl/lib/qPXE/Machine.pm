@@ -18,6 +18,7 @@ qPXE::Machine - A machine within the virtual test laboratory
 
 use qPXE::Moose;
 use qPXE::Network;
+use qPXE::Screenshot;
 use XML::LibXML;
 use strict;
 use warnings;
@@ -131,6 +132,17 @@ method mac ( qPXE::Network | Str $network ) {
   return $self->xml->findvalue ( '/domain/devices/interface'.
 				 '[source/@network=\''.$network->name.'\']'.
 				 '/mac/@address' );
+}
+
+=item C<< screenshot ( [$screen] ) >>
+
+Take a screenshot of the machine.  Returns a C<qPXE::Screenshot>
+object.
+
+=cut
+
+method screenshot ( Int $screen = 0 ) {
+  return qPXE::Screenshot->new ( machine => $self, screen => $screen );
 }
 
 =back

@@ -22,6 +22,7 @@ requires "XML::LibXML";
 requires "Net::SSH::Perl";
 requires "Net::SFTP";
 requires "Net::XMPP";
+requires "IPC::Run3";
 requires "Data::UUID";
 requires "Catalyst";
 
