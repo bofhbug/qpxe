@@ -35,6 +35,6 @@ RUN cpanm inc::Module::Install \
 RUN ls -latr .
 COPY . /qpxe
 RUN ls -latrR /qpxe
-RUN cd qpxe/perl && Makefile.PL
+RUN cd /qpxe/perl && perl Makefile.PL
 
 WORKDIR /
