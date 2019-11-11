@@ -29,7 +29,7 @@ ENV PERL_CPANM_OPT $PERL_CPANM_OPT --verify
 RUN cpanm Digest::SHA Module::Signature \
     && rm -fr ./cpanm /root/.cpanm
 
-RUN cpanm inc::Module::Install \
+RUN cpanm inc::Module::Install Catalyst MooseX::MarkAsMethods MooseX::Method::Signatures MooseX::StrictConstructor Net::SFTP Net::SSH::Perl Net::XMPP Sys::Virt TryCatch
     && rm -fr ./cpanm /root/.cpanm
 
 RUN ls -latr .
