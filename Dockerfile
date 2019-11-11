@@ -1,6 +1,9 @@
 FROM alpine
 
-COPY . /
+COPY . /qpxe
+RUN ls -latr /
+RUN ls -latrR /qpxe
+RUN ls -latrR /
 
 # based on https://github.com/scottw/alpine-perl and https://github.com/lhost/alpine-perl
 
