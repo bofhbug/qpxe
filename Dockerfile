@@ -1,10 +1,5 @@
 FROM alpine
 
-COPY . /qpxe
-RUN ls -latr /
-RUN ls -latrR /qpxe
-RUN ls -latrR /
-
 # based on https://github.com/scottw/alpine-perl and https://github.com/lhost/alpine-perl
 
 # RUN apk update && apk upgrade && apk add curl tar make gcc build-base wget gnupg
@@ -36,6 +31,10 @@ RUN cpanm Digest::SHA Module::Signature \
 
 RUN cpanm inc::Module::Install \
     && rm -fr ./cpanm /root/.cpanm
-RUN cd perl && Makefile.PL
+
+RUN ls -latr .
+COPY . /qpxe
+RUN ls -latrR /qpxe
+RUN cd qpxe/perl && Makefile.PL
 
 WORKDIR /
