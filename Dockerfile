@@ -1,5 +1,7 @@
 FROM alpine
 
+COPY . /
+
 # based on https://github.com/scottw/alpine-perl and https://github.com/lhost/alpine-perl
 
 # RUN apk update && apk upgrade && apk add curl tar make gcc build-base wget gnupg
