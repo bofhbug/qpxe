@@ -21,11 +21,16 @@ RUN apk update && apk upgrade && apk add perl-app-cpanminus perl-digest-sha1 && 
 ENV PERL_CPANM_OPT --verbose --mirror https://cpan.metacpan.org --mirror-only
 ####RUN cpanm Digest::SHA Module::Signature && rm -rf ~/.cpanm
 
+ENV PERL_CPANM_OPT --verbose --mirror http://cpan.metacpan.org --mirror-only
 ENV PERL_CPANM_OPT $PERL_CPANM_OPT --verify
 #RUN cpanm Digest::SHA Module::Signature Test::Most Test::Doctest LWP::UserAgent \
 #    Email::MIME XML::Simple \
 #    && rm -rf ~/.cpanm
 RUN cpanm Digest::SHA Module::Signature \
-    && rm -rf ~/.cpanm
+    && rm -fr ./cpanm /root/.cpanm
+
+RUN cpanm inc::Module::Install \
+    && rm -fr ./cpanm /root/.cpanm
+RUN cd perl && Makefile.PL
 
 WORKDIR /
