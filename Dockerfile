@@ -1,12 +1,71 @@
-FROM perl:5.30.0-threaded
+### First stage, just to add our package dependencies. We put this on a
+### separate stage to be able to reuse them across the "build" and
+### "devel" phases lower down
+FROM melopt/perl-alt:latest-build AS package_deps
 
-ENV PERL_CPANM_OPT --verbose --mirror http://cpan.metacpan.org --mirror-only
-ENV PERL_CPANM_OPT $PERL_CPANM_OPT --verify
-RUN cpanm App::cpanminus
+### Add any packaged dependencies that your application might need. Make
+### sure you use the -devel or -libs package, as this is to be used to
+### build your dependencies and app. Tthe postgres-libs shown below is
+### just an example
+RUN apk --no-cache add postgres-libs
 
-COPY . /usr/src/qpxe
-RUN cd /usr/src/qpxe/perl && cpanm --installdeps .
-#RUN cd /usr/src/qpxe/web && cpanm --installdeps .
 
-WORKDIR /usr/src/qpxe/web
-CMD [ "perl", "./qpxe-web" ]
+### Second stage, build our app. We start from the previous stage, package_deps
+FROM package_deps AS builder
+
+### We copy all cpanfiles (this includes the optional cpanfile.snapshot)
+### to the application directory, and we install the dependencies. Note
+### that by default pdi-build-deps will install our apps dependencies
+### under /deps. This is important later on.
+###COPY cpanfile* /app/
+COPY perl/cpanfile* /app/
+RUN cd /app && pdi-build-deps
+
+### Copy the rest of the application to the app folder
+COPY . /app/
+
+
+### The third stage is used to create a developers image, based on the
+### package_deps and build phases, and with
+### possible some extra tools that you might want during local
+### development. This layer has no impact on the runtime final version,
+### but can be generated with a `docker build --target devel`
+FROM package_deps AS devel
+
+### Add any packaged dependencies that your application might need
+### during development time. Given that we start from package_deps
+### phase, all package dependencies from the build phase are already
+### included.
+RUN apk --no-cache add jq
+
+### Assuming you have a cpanfile.devel file with all your devel-time
+### dependencies, you can install it with this
+RUN cd /app && pdi-build-deps cpanfile.devel
+
+### Copy the App dependencies and the app code
+COPY --from=builder /deps/ /deps/
+COPY --from=builder /app/ /app/
+
+### And we are done: this "development" image can be generated with:
+###
+###      docker build -t my-app-devel --target devel .
+###
+### You can then run it as:
+###
+###      cd your-app-workdir; docker run -it --rm -v `pwd`:/app my-app-devel
+###
+
+
+### Now for the fourth and final stage, the runtime edition. We start from the
+### runtime version and add all the files from the build phase
+FROM melopt/perl-alt:latest-runtime
+
+### Add any packaged dependencies that your application might need
+RUN apk --no-cache add postgres-libs
+
+### Copy the App dependencies and the app code
+COPY --from=builder /deps/ /deps/
+COPY --from=builder /app/ /app/
+
+### Add the command to start the application
+CMD [ "qpxe-web" ]
