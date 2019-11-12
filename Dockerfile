@@ -16,7 +16,7 @@ gnupg yaml perl-yaml perl-utils perl-error perl-git git-perl perl-common-sense
 #    && chmod +x cpanm \
 #    && ./cpanm App::cpanminus \
 #    && rm -fr ./cpanm /root/.cpanm
-RUN apk update && apk upgrade && apk add perl-app-cpanminus perl-digest-sha1 && cpanm App::cpanminus && rm -fr ./cpanm /root/.cpanm
+RUN apk update && apk upgrade && apk add perl-app-cpanminus perl-digest-sha1 perl-module-signature && cpanm App::cpanminus && rm -fr ./cpanm /root/.cpanm
 
 ENV PERL_CPANM_OPT --verbose --mirror https://cpan.metacpan.org --mirror-only
 ####RUN cpanm Digest::SHA Module::Signature && rm -rf ~/.cpanm
