@@ -32,7 +32,7 @@ RUN cpanm Digest::SHA Module::Signature \
 
 RUN ls -latr .
 COPY . /qpxe
-cpanm inc::Module::Install
+RUN cpanm inc::Module::Install
 RUN set -vx && cd /qpxe/perl && cpanm --installdeps .
 #RUN cpanm inc::Module::Install Catalyst MooseX::MarkAsMethods MooseX::Method::Signatures \
     MooseX::StrictConstructor Net::SFTP Net::SSH::Perl Net::XMPP Sys::Virt TryCatch \
