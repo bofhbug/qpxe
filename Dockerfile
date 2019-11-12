@@ -39,4 +39,6 @@ COPY . /qpxe
 RUN ls -latrR /qpxe
 RUN cd /qpxe/perl && perl Makefile.PL
 
-WORKDIR /
+#WORKDIR /
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["--help"]
