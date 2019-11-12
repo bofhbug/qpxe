@@ -17,18 +17,19 @@ RUN apk add curl perl perl-dev make gcc build-base wget gnupg m4 pkgconf libvirt
 #    && chmod +x cpanm \
 #    && ./cpanm App::cpanminus \
 #    && rm -fr ./cpanm /root/.cpanm
-RUN apk update && apk upgrade && apk add perl-app-cpanminus perl-digest-sha1 && cpanm App::cpanminus && rm -fr ./cpanm /root/.cpanm
+RUN apk update && apk upgrade && apk add perl-app-cpanminus perl-digest-sha1 && cpanm App::cpanminus && rm -fr ./cpanm $HOME/.cpanm /root/.cpanm
 
 ENV PERL_CPANM_OPT --verbose --mirror https://cpan.metacpan.org --mirror-only
 ####RUN cpanm Digest::SHA Module::Signature && rm -rf ~/.cpanm
+RUN cpanm Digest::SHA Module::Signature 
 
-ENV PERL_CPANM_OPT --verbose --mirror http://cpan.metacpan.org --mirror-only
+ENV PERL_CPANM_OPT --verbose --mirror http://cpan.metacpan.org --mirror http://cpan.perl.org/
 ENV PERL_CPANM_OPT $PERL_CPANM_OPT --verify
 #RUN cpanm Digest::SHA Module::Signature Test::Most Test::Doctest LWP::UserAgent \
 #    Email::MIME XML::Simple \
 #    && rm -rf ~/.cpanm
-RUN cpanm Digest::SHA Module::Signature \
-    && rm -fr ./cpanm /root/.cpanm
+#####RUN cpanm Digest::SHA Module::Signature \
+####    && rm -fr ./cpanm /root/.cpanm
 
 RUN ls -latr .
 COPY . /qpxe
