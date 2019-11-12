@@ -7,7 +7,8 @@ FROM melopt/perl-alt:latest-build AS package_deps
 ### sure you use the -devel or -libs package, as this is to be used to
 ### build your dependencies and app. Tthe postgres-libs shown below is
 ### just an example
-RUN apk --no-cache add postgres-libs
+#RUN apk --no-cache add postgres-libs
+RUN apk --no-cache add postgresql-libs
 
 
 ### Second stage, build our app. We start from the previous stage, package_deps
