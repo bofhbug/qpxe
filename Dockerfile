@@ -6,10 +6,11 @@ FROM alpine
 RUN apk update && apk upgrade && apk add curl wget make gcc build-base gnupg perl perl-dev
 # RUN apk update && apk upgrade && apk add curl make gcc build-base wget gnupg perl perl-dev perl-module-install perl-file-remove perl-yaml-tiny perl-carp-clan perl-class-load perl-data-uuid perl-ipc-run3 perl-moox-types-mooselike perl-moose perl-net-openssh perl-test-exception perl-test-pod perl-xml-libxml perl-term-readkey yaml perl-yaml perl-utils perl-error perl-git git-perl perl-common-sense
 
-RUN apk update && apk upgrade && apk add perl-dev perl-module-install perl-file-remove \
-perl-yaml-tiny perl-carp-clan perl-class-load perl-data-uuid perl-ipc-run3 perl-moox-types-mooselike \
-perl-moose perl-net-openssh perl-test-exception perl-test-pod perl-xml-libxml perl-term-readkey \
-gnupg yaml perl-yaml perl-utils perl-error perl-git git-perl perl-common-sense
+RUN apk add curl perl perl-dev make gcc build-base wget gnupg m4 pkgconf libvirt-libs libvirt-dev libvirt expat-dev
+#RUN apk update && apk upgrade && apk add perl-dev perl-module-install perl-file-remove \
+#perl-yaml-tiny perl-carp-clan perl-class-load perl-data-uuid perl-ipc-run3 perl-moox-types-mooselike \
+#perl-moose perl-net-openssh perl-test-exception perl-test-pod perl-xml-libxml perl-term-readkey \
+#gnupg yaml perl-yaml perl-utils perl-error perl-git git-perl perl-common-sense
 
 
 #RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
@@ -31,11 +32,11 @@ RUN cpanm Digest::SHA Module::Signature \
 
 RUN ls -latr .
 COPY . /qpxe
-
+cpanm inc::Module::Install
 RUN set -vx && cd /qpxe/perl && cpanm --installdeps .
-RUN cpanm inc::Module::Install Catalyst MooseX::MarkAsMethods MooseX::Method::Signatures \
+#RUN cpanm inc::Module::Install Catalyst MooseX::MarkAsMethods MooseX::Method::Signatures \
     MooseX::StrictConstructor Net::SFTP Net::SSH::Perl Net::XMPP Sys::Virt TryCatch \
-    && rm -fr ./cpanm /root/.cpanm
+#    && rm -fr ./cpanm /root/.cpanm
 
 ###RUN ls -latr .
 ###COPY . /qpxe
