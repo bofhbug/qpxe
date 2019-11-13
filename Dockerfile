@@ -65,8 +65,8 @@ FROM melopt/perl-alt:latest-runtime
 
 ### Add any packaged dependencies that your application might need
 ##RUN apk --no-cache add postgres-libs
-RUN apk --no-cache add libvirt-libs gmp-libs m4 pkgconf expat-libs
-RUN apk --no-cache add libvirt gmp m4 pkgconf expat
+#RUN apk --no-cache add libvirt-libs gmp m4 pkgconf expat
+RUN apk --no-cache add libvirt gmp expat
 
 ### Copy the App dependencies and the app code
 COPY --from=builder /deps/ /deps/
