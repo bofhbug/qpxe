@@ -8,7 +8,7 @@ FROM melopt/perl-alt:latest-build AS package_deps
 ### build your dependencies and app. Tthe postgres-libs shown below is
 ### just an example
 #RUN apk --no-cache add postgres-libs
-RUN apk --no-cache add libvirt-dev
+RUN apk --no-cache add libvirt-dev gmp-dev m4 pkgconf expat-dev
 
 
 ### Second stage, build our app. We start from the previous stage, package_deps
@@ -37,7 +37,7 @@ FROM package_deps AS devel
 ### during development time. Given that we start from package_deps
 ### phase, all package dependencies from the build phase are already
 ### included.
-RUN apk --no-cache add jq libvirt-dev
+RUN apk --no-cache add jq
 
 ### Assuming you have a cpanfile.devel file with all your devel-time
 ### dependencies, you can install it with this
