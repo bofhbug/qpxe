@@ -20,3 +20,4 @@ requires "Net::XMPP";
 requires "IPC::Run3";
 requires "Data::UUID";
 requires "Catalyst";
+requires "Devel::PPPort";
