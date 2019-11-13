@@ -41,6 +41,8 @@ RUN apk --no-cache add jq
 
 ### Assuming you have a cpanfile.devel file with all your devel-time
 ### dependencies, you can install it with this
+#### TESTING
+COPY --from=builder /app/cpanfile* /app/
 RUN cd /app && pdi-build-deps cpanfile.devel
 
 ### Copy the App dependencies and the app code
