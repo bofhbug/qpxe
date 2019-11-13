@@ -8,7 +8,7 @@ FROM melopt/perl-alt:latest-build AS package_deps
 ### build your dependencies and app. Tthe postgres-libs shown below is
 ### just an example
 #RUN apk --no-cache add postgres-libs
-RUN apk --no-cache add libvirt-dev gmp-dev m4 pkgconf expat-dev
+RUN apk --no-cache add libvirt-dev gmp-dev m4 pkgconf expat-dev tar gzip
 
 
 ### Second stage, build our app. We start from the previous stage, package_deps
@@ -25,6 +25,10 @@ RUN cd /app && pdi-build-deps
 ### Copy the rest of the application to the app folder
 COPY . /app/
 
+RUN cd /app/perl && perl Makefile.PL
+RUN cd /app/perl && make
+RUN cd /app/perl && make manifest
+RUN cd /app/perl && make dist
 
 ### The third stage is used to create a developers image, based on the
 ### package_deps and build phases, and with
