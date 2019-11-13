@@ -1,0 +1,27 @@
+#
+recommends "Devel::LexAlias";
+recommends "PadWalker";
+requires "Test::Output";
+requires "Test::Pod";
+recommends "PAR::Dist";
+recommends "Test::Pod::Coverage";
+recommends "Test::CleanNamespaces";
+recommends "Test::Taint";
+recommends "Test::Without::Module";
+recommends "Sub::Exporter";
+recommends "Sub::Name";
+recommends "YAML";
+recommends "Package::Generator";
+recommends "Moo";
+recommends "Mouse";
+recommends "Role::Tiny";
+recommends "MooseX::MarkAsMethods";
+recommends "Test::LeakTrace";
+recommends "Module::Refresh";
+recommends "Declare::Constraints::Simple";
+recommends "Test::Memory::Cycle";
+recommends "PadWalker";
+recommends "List::SomeUtils";
+recommends "IO::String";
+recommends "Specio::Library::Builtins";
+recommends "Types::Standard";
