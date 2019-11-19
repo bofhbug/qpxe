@@ -1,3 +1,10 @@
+# syntax=docker/dockerfile:experimental
+# # syntax = <frontend image>, e.g. # syntax = docker/dockerfile:1.0-experimental
+# https://docs.docker.com/develop/develop-images/build_enhancements/
+# To enable buildkit builds
+# Easiest way from a fresh install of docker is to set the DOCKER_BUILDKIT=1 environment variable when invoking the docker build command, such as:
+# # DOCKER_BUILDKIT=1 docker build .
+
 FROM alpine
 
 # based on https://github.com/scottw/alpine-perl and https://github.com/lhost/alpine-perl
