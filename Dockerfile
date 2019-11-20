@@ -1,3 +1,10 @@
+# syntax=docker/dockerfile:experimental
+# # syntax = <frontend image>, e.g. # syntax = docker/dockerfile:1.0-experimental
+# https://docs.docker.com/develop/develop-images/build_enhancements/
+# To enable buildkit builds
+# Easiest way from a fresh install of docker is to set the DOCKER_BUILDKIT=1 environment variable when invoking the docker build command, such as:
+# # DOCKER_BUILDKIT=1 docker build .
+
 ### First stage, just to add our package dependencies. We put this on a
 ### separate stage to be able to reuse them across the "build" and
 ### "devel" phases lower down
