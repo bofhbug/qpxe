@@ -13,7 +13,7 @@ FROM alpine
 RUN apk update && apk upgrade && apk add curl wget make gcc build-base gnupg perl perl-dev
 # RUN apk update && apk upgrade && apk add curl make gcc build-base wget gnupg perl perl-dev perl-module-install perl-file-remove perl-yaml-tiny perl-carp-clan perl-class-load perl-data-uuid perl-ipc-run3 perl-moox-types-mooselike perl-moose perl-net-openssh perl-test-exception perl-test-pod perl-xml-libxml perl-term-readkey yaml perl-yaml perl-utils perl-error perl-git git-perl perl-common-sense
 
-RUN apk add curl perl perl-dev make gcc build-base wget gnupg m4 pkgconf libvirt-libs libvirt-dev libvirt expat-dev
+RUN apk add curl perl perl-dev make gcc build-base wget gnupg m4 pkgconf libvirt-libs libvirt-dev libvirt expat-dev yaml yaml-dev
 #RUN apk update && apk upgrade && apk add perl-dev perl-module-install perl-file-remove \
 #perl-yaml-tiny perl-carp-clan perl-class-load perl-data-uuid perl-ipc-run3 perl-moox-types-mooselike \
 #perl-moose perl-net-openssh perl-test-exception perl-test-pod perl-xml-libxml perl-term-readkey \
